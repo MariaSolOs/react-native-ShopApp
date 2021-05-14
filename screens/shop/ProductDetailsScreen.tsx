@@ -7,20 +7,17 @@ import {
     Button,
     StyleSheet 
 } from 'react-native';
-import { NavigationStackScreenComponent } from 'react-navigation-stack';
+import { RouteProp } from '@react-navigation/native';
+import { StackScreenProps, StackNavigationOptions } from '@react-navigation/stack';
+
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { addToCart } from '../../store/cartSlice';
-
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/fonts';
+import { ProductsStackParamList } from '../../navigation/types';
 
-type Props = {
-    productId: string;
-    productTitle: string;
-}
-
-const ProductDetailsScreen: NavigationStackScreenComponent<Props> = (props) => {
-    const productId = props.navigation.getParam('productId');
+const ProductDetailsScreen = (props: StackScreenProps<ProductsStackParamList, 'ProductDetails'>) => {
+    const { productId } = props.route.params;
     const product = useAppSelector(state => state.products.availableProducts.find(({ id }) => (
         id === productId
     )))!;
@@ -44,12 +41,9 @@ const ProductDetailsScreen: NavigationStackScreenComponent<Props> = (props) => {
     );
 }
 
-ProductDetailsScreen.navigationOptions = ({ navigation }) => {
-    const productTitle = navigation.getParam('productTitle');
-    return {
-        headerTitle: productTitle
-    }
-}
+export const ProductDetailsScreenOptions = ({ route }: { route: RouteProp<ProductsStackParamList, 'ProductDetails'> }): StackNavigationOptions => ({
+    headerTitle: route.params.productTitle
+});
 
 const styles = StyleSheet.create({
     image: {

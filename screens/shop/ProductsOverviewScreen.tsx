@@ -2,36 +2,39 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
     FlatList, 
     Button, 
-    Platform, 
     Text,
     ActivityIndicator, 
+    Platform
 } from 'react-native';
-import { NavigationStackScreenComponent } from 'react-navigation-stack';
-import { DrawerActions } from 'react-navigation-drawer';
+import { 
+    StackScreenProps, 
+    StackNavigationProp, 
+    StackNavigationOptions 
+} from '@react-navigation/stack';
+import { DrawerActions } from '@react-navigation/native';
 import { unwrapResult } from '@reduxjs/toolkit';
+import { HeaderButtons, Item } from 'react-navigation-header-buttons';
+
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { fetchProducts } from '../../store/productsSlice';
 import { addToCart } from '../../store/cartSlice';
-import { HeaderButtons, Item } from 'react-navigation-header-buttons';
-
-import Centered from '../../components/UI/CenteredView';
-import ProductItem from '../../components/shop/ProductItem';
-import HeaderButton from '../../components/UI/HeaderButton';
+import { ProductsStackParamList } from '../../navigation/types';
 import { Colors } from '../../constants/colors';
 import { Product } from '../../models/product';
 
-const ProductsOverviewScreen: NavigationStackScreenComponent = (props) => {
+import HeaderButton from '../../components/UI/HeaderButton';
+import Centered from '../../components/UI/CenteredView';
+import ProductItem from '../../components/shop/ProductItem';
+
+const ProductsOverviewScreen = (props: StackScreenProps<ProductsStackParamList, 'ProductsOverview'>) => {
     const products = useAppSelector(state => state.products.availableProducts);
 
     const dispatch = useAppDispatch();
 
     const handleProductNavigate = (item: Product) => {
-        props.navigation.navigate({
-            routeName: 'ProductDetails',
-            params: {
-                productId: item.id,
-                productTitle: item.title
-            }
+        props.navigation.navigate('ProductDetails', {
+            productId: item.id,
+            productTitle: item.title
         });
     }
 
@@ -56,9 +59,8 @@ const ProductsOverviewScreen: NavigationStackScreenComponent = (props) => {
     }, [loadProducts]);
 
     useEffect(() => {
-        const focusListener = props.navigation.addListener('willFocus', loadProducts);
-
-        return () => { focusListener.remove(); }
+        const unsuscribe = props.navigation.addListener('focus', loadProducts);
+        return unsuscribe;
     }, [loadProducts]);
 
     if (isLoading) {
@@ -112,30 +114,28 @@ const ProductsOverviewScreen: NavigationStackScreenComponent = (props) => {
     );
 }
 
-ProductsOverviewScreen.navigationOptions = ({ navigation }) => {
-    return {
-        headerTitle: 'Products',
-        headerRight: () => (
-            <HeaderButtons HeaderButtonComponent={HeaderButton}>
-                <Item
-                title="Cart"
-                iconName="cart-outline"
-                onPress={() => {
-                    navigation.navigate('Cart');
-                }} />
-            </HeaderButtons>
-        ),
-        headerLeft: () => (
-            <HeaderButtons HeaderButtonComponent={HeaderButton}>
-                <Item
-                title="Menu"
-                iconName={Platform.OS === 'android' ? 'md-menu' : 'ios-menu'}
-                onPress={() => {
-                    navigation.dispatch(DrawerActions.toggleDrawer());
-                }} />
-            </HeaderButtons>
-        )
-    }
-}
+export const ProductsOverviewScreenOptions = ({ navigation }: { navigation: StackNavigationProp<ProductsStackParamList, 'ProductsOverview'> }): StackNavigationOptions => ({
+    headerTitle: 'Products',
+    headerRight: () => (
+        <HeaderButtons HeaderButtonComponent={HeaderButton}>
+            <Item
+            title="Cart"
+            iconName="cart-outline"
+            onPress={() => {
+                navigation.navigate('Cart');
+            }} />
+        </HeaderButtons>
+    ),
+    headerLeft: () => (
+        <HeaderButtons HeaderButtonComponent={HeaderButton}>
+            <Item
+            title="Menu"
+            iconName={Platform.OS === 'android' ? 'md-menu' : 'ios-menu'}
+            onPress={() => {
+                navigation.dispatch(DrawerActions.toggleDrawer());
+            }} />
+        </HeaderButtons>
+    )
+});
 
 export default ProductsOverviewScreen;

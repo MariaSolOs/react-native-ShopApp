@@ -4,16 +4,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 interface AuthState {
     token: string | null;
     userId: string | null;
+    didTryAutoLogin: boolean;
 }
 
 const initialState: AuthState = {
     token: null,
-    userId: null
+    userId: null,
+    didTryAutoLogin: false
 }
 
 let timer: NodeJS.Timeout;
 
 type AuthPayload = { email: string; password: string; mode: 'login' | 'signup' }
+type StoreAuthDataPayload = { token: string; userId: string }
 
 const setLogoutTimer = createAsyncThunk(
     'auth/logoutStatus',
@@ -53,7 +56,10 @@ export const authUser = createAsyncThunk(
             expiryDate: expiryDate.toISOString() 
         }));
 
-        dispatch(storeAuthData({ token: resJSON.idToken, userId: resJSON.localId }));
+        dispatch(storeAuthData({ 
+            token: resJSON.idToken, 
+            userId: resJSON.localId
+        }));
         dispatch(setLogoutTimer(+resJSON.expiresIn * 1000));
 
         return { token: resJSON.idToken, userId: resJSON.localId }
@@ -64,9 +70,13 @@ const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        storeAuthData: (state, { payload }: PayloadAction<AuthState>) => {
+        storeAuthData: (state, { payload }: PayloadAction<StoreAuthDataPayload>) => {
             state.token = payload.token;
             state.userId = payload.userId;
+            state.didTryAutoLogin = true;
+        },
+        setTryAutoLogIn: (state) => {
+            state.didTryAutoLogin = true;
         },
         logout: () => {
             if (timer) { clearTimeout(timer); }
@@ -76,6 +86,6 @@ const authSlice = createSlice({
     }
 });
 
-export const { storeAuthData, logout } = authSlice.actions;
+export const { storeAuthData, setTryAutoLogIn, logout } = authSlice.actions;
 
 export default authSlice.reducer;

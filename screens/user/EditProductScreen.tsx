@@ -7,16 +7,19 @@ import {
     ActivityIndicator,
     StyleSheet 
 } from 'react-native';
-import { NavigationStackScreenComponent } from 'react-navigation-stack';
+import { RouteProp } from '@react-navigation/native';
+import { StackScreenProps, StackNavigationOptions } from '@react-navigation/stack';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
+import { unwrapResult, SerializedError } from '@reduxjs/toolkit';
+
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { createProduct, updateProduct } from '../../store/productsSlice';
-import { unwrapResult, SerializedError } from '@reduxjs/toolkit';
+import { UserStackParamList } from '../../navigation/types';
+import { Colors } from '../../constants/colors';
 
 import Centered from '../../components/UI/CenteredView';
 import HeaderButton from '../../components/UI/HeaderButton';
 import Input from '../../components/UI/Input';
-import { Colors } from '../../constants/colors';
 
 type FormField = 'title' | 'imageUrl' | 'price' | 'description';
 
@@ -50,14 +53,9 @@ const formReducer = (state: FormState, action: Action): FormState => {
     }
 }
 
-type Props = {
-    productId?: string; 
-    onSubmit: () => void;
-}
-
-const EditProductScreen: NavigationStackScreenComponent<Props> = (props) => {
+const EditProductScreen = (props: StackScreenProps<UserStackParamList, 'EditProduct'>) => {
     const editProduct = useAppSelector(state => state.products.userProducts.find(({ id }) => 
-        id === props.navigation.getParam('productId')
+        id === props.route.params.productId
     ));
 
     const [isLoading, setIsLoading] = useState(false);
@@ -137,7 +135,16 @@ const EditProductScreen: NavigationStackScreenComponent<Props> = (props) => {
     }, [errorMsg]);
 
     useEffect(() => {
-        props.navigation.setParams({ onSubmit: handleSubmit });
+        props.navigation.setOptions({
+            headerRight: () => (
+                <HeaderButtons HeaderButtonComponent={HeaderButton}>
+                    <Item
+                    title="Save"
+                    iconName="checkmark-circle-outline"
+                    onPress={handleSubmit} />
+                </HeaderButtons>
+            )
+        })
     }, [handleSubmit]);
 
     if (isLoading) {
@@ -207,20 +214,11 @@ const EditProductScreen: NavigationStackScreenComponent<Props> = (props) => {
     );
 }
 
-EditProductScreen.navigationOptions = ({ navigation }) => {
-    const isEditing = navigation.getParam('productId');
-    const onSubmit = navigation.getParam('onSubmit');
+export const EditProductScreenOptions = ({ route }: { route: RouteProp<UserStackParamList, 'EditProduct'> }): StackNavigationOptions => {
+    const isEditing = route.params.productId;
 
     return {
-        headerTitle: isEditing ? 'Edit product' : 'Add product',
-        headerRight: () => (
-            <HeaderButtons HeaderButtonComponent={HeaderButton}>
-                <Item
-                title="Save"
-                iconName="checkmark-circle-outline"
-                onPress={onSubmit} />
-            </HeaderButtons>
-        )
+        headerTitle: isEditing ? 'Edit product' : 'Add product'
     }
 }
 

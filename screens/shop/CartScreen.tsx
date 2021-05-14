@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, Button, ActivityIndicator, StyleSheet } from 'react-native';
-import { NavigationStackScreenComponent } from 'react-navigation-stack';
-import { Colors } from '../../constants/colors';
-import { Fonts } from '../../constants/fonts';
+import { StackNavigationOptions } from '@react-navigation/stack';
+
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { removeFromCart } from '../../store/cartSlice';
 import { addOrder } from '../../store/ordersSlice';
+import { Colors } from '../../constants/colors';
+import { Fonts } from '../../constants/fonts';
 
 import Card from '../../components/UI/Card';
 import CartItem from '../../components/shop/CartItem';
 
-const CartScreen: NavigationStackScreenComponent = () => {
+const CartScreen = () => {
     const totalAmount = Math.max(useAppSelector(state => state.cart.totalAmount), 0);
     const cartItems = useAppSelector(state => Object.entries(state.cart.items).map(entry => (
         { productId: entry[0], ...entry[1] }
@@ -57,7 +58,7 @@ const CartScreen: NavigationStackScreenComponent = () => {
     );
 }
 
-CartScreen.navigationOptions = {
+export const CartScreenOptions: StackNavigationOptions = {
     headerTitle: 'Your cart'
 }
 

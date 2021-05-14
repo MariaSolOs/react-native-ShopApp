@@ -8,15 +8,16 @@ import {
     Alert,
     StyleSheet 
 } from 'react-native';
-import { NavigationStackScreenComponent } from 'react-navigation-stack';
+import { StackNavigationOptions } from '@react-navigation/stack';
+import { unwrapResult, SerializedError } from '@reduxjs/toolkit';
+
 import { useAppDispatch } from '../../hooks/redux';
 import { authUser } from '../../store/authSlice';
-import { unwrapResult, SerializedError } from '@reduxjs/toolkit';
+import { Colors } from '../../constants/colors';
 
 import { LinearGradient } from 'expo-linear-gradient';
 import Input from '../../components/UI/Input';
 import Card from '../../components/UI/Card';
-import { Colors } from '../../constants/colors';
 
 type FormField = 'email' | 'password';
 
@@ -50,7 +51,7 @@ const formReducer = (state: FormState, action: Action): FormState => {
     }
 }
 
-const AuthScreen: NavigationStackScreenComponent = (props) => {
+const AuthScreen = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isLogIn, setIsLogIn] = useState(true);
     const [errorMsg, setErrorMsg] = useState('');
@@ -95,7 +96,6 @@ const AuthScreen: NavigationStackScreenComponent = (props) => {
                 ...formState.values,
                 mode: isLogIn ? 'login' : 'signup'
             })).then(unwrapResult);
-            props.navigation.navigate('Shop');
         } catch (e) {
             setIsLoading(false);
             setErrorMsg((e as SerializedError | Error).message || 'Something went wrong...');
@@ -162,9 +162,9 @@ const AuthScreen: NavigationStackScreenComponent = (props) => {
     );
 }
 
-AuthScreen.navigationOptions = {
+export const AuthScreenOptions: StackNavigationOptions = {
     headerTitle: 'Authenticate'
-}
+} 
 
 const styles = StyleSheet.create({
     screen: {
