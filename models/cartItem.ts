@@ -3,4 +3,5 @@ export type CartItem = {
     price: number;
     title: string;
     productId?: string;  
+    pushToken: string;
 }

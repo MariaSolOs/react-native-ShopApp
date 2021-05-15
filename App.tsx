@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { LogBox } from 'react-native';
 import { Provider } from 'react-redux';
-import store from './store/store';
 import AppLoading from 'expo-app-loading';
 import * as Font from 'expo-font';
+import * as Notifications from 'expo-notifications';
 
+import store from './store/store';
 import AppNavigator from './navigation/AppNavigator';
 import { Fonts } from './constants/fonts';
 
@@ -15,9 +16,17 @@ const fetchFonts = () => {
     });
 }
 
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: false,
+        shouldSetBadge: true
+    })
+});
+
 LogBox.ignoreLogs(['interpolate()']);
 
-export default function App() {
+const App = () => {
     const [fontLoading, setFontLoading] = useState(true);
 
     if (fontLoading) {
@@ -35,3 +44,5 @@ export default function App() {
         </Provider>
     );
 }
+
+export default App;

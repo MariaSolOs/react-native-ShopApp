@@ -23,16 +23,18 @@ const cartSlice = createSlice({
     initialState,
     reducers: {
         addToCart: (state, { payload }: AddToCartActionPayload) => {
-            if (state.items[payload.product.id]) {
-                state.items[payload.product.id].quantity++;
+            const { product } = payload;
+            if (state.items[product.id]) {
+                state.items[product.id].quantity++;
             } else {
-                state.items[payload.product.id] = {
+                state.items[product.id] = {
                     quantity: 1,
-                    price: payload.product.price,
-                    title: payload.product.title
+                    price: product.price,
+                    title: product.title,
+                    pushToken: product.ownerPushToken
                 }
             }
-            state.totalAmount += payload.product.price;
+            state.totalAmount += product.price;
         },
         removeFromCart: (state, { payload }: RemoveFromCartActionPayload) => {
             const toRemove = state.items[payload.productId];

@@ -62,8 +62,24 @@ export const addOrder = createAsyncThunk(
 
         if (!res.ok) { throw new Error(); }
 
-        const resJSON: { name: string } = await res.json();
-        
+        const resJSON = await res.json();
+
+        for (const cartItem of payload.cartItems) {
+            fetch('https://exp.host/--/api/v2/push/send', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Accept-Encoding': 'gzip, deflate',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    to: cartItem.pushToken,
+                    title: 'New order!',
+                    body: `Someone ordered ${cartItem.title}`
+                })
+            });
+        }
+
         return {
             ...payload,
             id: resJSON.name,

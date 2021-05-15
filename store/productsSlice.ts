@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import * as Notifications from 'expo-notifications';
 
 import { RootState } from './store';
 import { Product } from '../models/product';
@@ -30,6 +31,16 @@ type UpdateProductPayload = {
 export const createProduct = createAsyncThunk(
     'products/createStatus',
     async (payload: CreateProductPayload, { getState }) => {
+        let pushToken = '';
+
+        let permissionStatus = await Notifications.getPermissionsAsync();
+        if (!permissionStatus.granted) {
+            permissionStatus = await Notifications.requestPermissionsAsync();
+        }
+        if (permissionStatus.granted) {
+            pushToken = (await Notifications.getExpoPushTokenAsync()).data;
+        }
+
         const token = (getState() as RootState).auth.token;
         const userId = (getState() as RootState).auth.userId;
         
@@ -41,18 +52,20 @@ export const createProduct = createAsyncThunk(
             },
             body: JSON.stringify({
                 ...payload,
-                ownerId: userId
+                ownerId: userId,
+                ownerPushToken: pushToken
             })
         });
 
         if (!res.ok) { throw new Error(); }
 
-        const resJSON: { name: string } = await res.json();
+        const resJSON = await res.json();
         
         return {
             ...payload,
             id: resJSON.name,
-            ownerId: userId
+            ownerId: userId,
+            ownerPushToken: pushToken
         }
     }
 );
@@ -64,12 +77,13 @@ export const fetchProducts = createAsyncThunk(
 
         const res = await fetch('https://rn-learning-d9297-default-rtdb.firebaseio.com/products.json');
 
-        const resJSON: Record<string, CreateProductPayload & { ownerId: string; }> = await res.json();   
+        const resJSON: Record<string, Product> = await res.json();   
         
         const allProducts = Object.entries(resJSON).map(([ id, data ]) => 
             new Product(
                 id,
                 data.ownerId,
+                data.ownerPushToken,
                 data.title,
                 data.imageUrl,
                 data.description,
@@ -130,6 +144,7 @@ const productsSlice = createSlice({
             const createdProduct = new Product(
                 payload.id,
                 payload.ownerId!,
+                payload.ownerPushToken,
                 payload.title,
                 payload.imageUrl,
                 payload.description,
@@ -150,6 +165,7 @@ const productsSlice = createSlice({
             const updatedProduct = new Product(
                 toUpdate.id,
                 toUpdate.ownerId,
+                toUpdate.ownerPushToken,
                 payload.title,
                 payload.imageUrl,
                 payload.description,
