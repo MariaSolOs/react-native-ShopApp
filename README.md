@@ -7,4 +7,4 @@ This is the main project from [this Udemy course](https://www.udemy.com/course/r
 * [Redux Toolkit](https://redux-toolkit.js.org/)
 
 ## Author
-[Maria José Solano](https://mariasolos.github.io/me/)
+[Maria José Solano](https://www.maria-sol-os.com/)
